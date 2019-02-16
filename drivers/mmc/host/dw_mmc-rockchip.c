@@ -8,8 +8,10 @@
  */
 
 #include <linux/module.h>
+#include <linux/moduleparam.h>
 #include <linux/platform_device.h>
 #include <linux/clk.h>
+#include <linux/delay.h>
 #include <linux/mmc/host.h>
 #include <linux/mmc/dw_mmc.h>
 #include <linux/of_address.h>
@@ -275,10 +277,23 @@ static const struct of_device_id dw_mci_rockchip_match[] = {
 };
 MODULE_DEVICE_TABLE(of, dw_mci_rockchip_match);
 
+static int dw_mci_defer_count = 5;
+core_param(rkwdmmc_defer_count, dw_mci_defer_count, int, S_IRUGO);
+static int dw_mci_defer_sleep = 50;
+core_param(rkwdmmc_defer_sleep, dw_mci_defer_sleep, int, S_IRUGO);
+
+static int defer_counter=0;
 static int dw_mci_rockchip_probe(struct platform_device *pdev)
 {
 	const struct dw_mci_drv_data *drv_data;
 	const struct of_device_id *match;
+	if (defer_counter < dw_mci_defer_count) {
+		defer_counter++;
+		printk("dw_mci_rockchip_probe: sleep %d ms and defer (%d / %d)\n",
+			dw_mci_defer_sleep, defer_counter, dw_mci_defer_count);
+		msleep(dw_mci_defer_sleep);
+		return -EPROBE_DEFER;
+	}
 
 	if (!pdev->dev.of_node)
 		return -ENODEV;

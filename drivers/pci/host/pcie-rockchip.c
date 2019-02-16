@@ -1277,6 +1277,9 @@ static int __maybe_unused rockchip_pcie_resume_noirq(struct device *dev)
 	return 0;
 }
 
+bool rk_pcie_port_initialized = false;
+EXPORT_SYMBOL(rk_pcie_port_initialized);
+
 static int rockchip_pcie_probe(struct platform_device *pdev)
 {
 	struct rockchip_pcie *rockchip;
@@ -1337,6 +1340,8 @@ static int rockchip_pcie_probe(struct platform_device *pdev)
 	err = rockchip_pcie_init_port(rockchip);
 	if (err)
 		goto err_vpcie;
+
+	rk_pcie_port_initialized = true;
 
 	rockchip_pcie_enable_interrupts(rockchip);
 

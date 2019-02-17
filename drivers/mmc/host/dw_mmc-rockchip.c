@@ -277,24 +277,28 @@ static const struct of_device_id dw_mci_rockchip_match[] = {
 };
 MODULE_DEVICE_TABLE(of, dw_mci_rockchip_match);
 
+#ifdef CONFIG_PCIE_ROCKCHIP
 static int dw_mci_defer_count = 50;
-core_param(rkwdmmc_defer_count, dw_mci_defer_count, int, S_IRUGO);
+core_param(rkdwmmc_defer_count, dw_mci_defer_count, int, S_IRUGO);
 extern bool rk_pcie_port_initialized;
-static int defer_count = 0;
+static int defer_counter = 0;
+#endif
 static int dw_mci_rockchip_probe(struct platform_device *pdev)
 {
 	const struct dw_mci_drv_data *drv_data;
 	const struct of_device_id *match;
 
+#ifdef CONFIG_PCIE_ROCKCHIP
 	if (!rk_pcie_port_initialized) {
-		if (defer_count < dw_mci_defer_count) {
-			printk("dw_mci_rockchip_probe: deferring until pcie port initialized\n");
-			defer_count++;
+		if (defer_counter < dw_mci_defer_count) {
+			dev_dbg(&pdev->dev, "deferring probe until pcie port initialized\n");
+			defer_counter++;
 			return -EPROBE_DEFER;
 		} else {
-			printk("dw_mci_rockchip_probe: continuing without pcie\n");
+			dev_warn(&pdev->dev, "no longer waiting for pcie port init\n");
 		}
 	}
+#endif
 
 	if (!pdev->dev.of_node)
 		return -ENODEV;

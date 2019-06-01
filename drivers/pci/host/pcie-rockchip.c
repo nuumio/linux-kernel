@@ -1088,6 +1088,12 @@ static int rockchip_pcie_parse_dt(struct rockchip_pcie *rockchip)
 		dev_info(dev, "bus-scan-delay-ms in device tree is %u ms\n", rockchip->bus_scan_delay);
 	}
 
+	err = of_property_read_u32(node, "rockchip,deferred",
+				&rockchip->deferred);
+	if (err < 0) {
+		dev_warn(dev, "missing \"rockchip,deferred\" property\n");
+	}
+
 	mem = of_parse_phandle(node, "memory-region", 0);
 	if (!mem) {
 		dev_warn(dev, "missing \"memory-region\" property\n");
@@ -1108,13 +1114,6 @@ static int rockchip_pcie_parse_dt(struct rockchip_pcie *rockchip)
 	if (err < 0) {
 		dev_warn(dev,
 			"missing \"rockchip,dma_trx_enabled\" property\n");
-		return 0;
-	}
-
-	err = of_property_read_u32(node, "rockchip,deferred",
-				&rockchip->deferred);
-	if (err < 0) {
-		dev_warn(dev, "missing \"rockchip,deferred\" property\n");
 		return 0;
 	}
 
@@ -1645,6 +1644,7 @@ static int rockchip_pcie_probe(struct platform_device *pdev)
 			dev_err(&pdev->dev, "SysFS group creation failed\n");
 			goto err_free_res;
 		}
+		dev_info(dev, "Probe deferred until triggered from userspace\n");
 	} else {
 		err = rockchip_pcie_really_probe(rockchip);
 		if (err) {

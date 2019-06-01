@@ -1147,6 +1147,7 @@
 	pinctrl-0 = <&pcie_clkreqnb_cpm>;
 	vpcie3v3-supply = <&vcc3v3_pcie>;
 	bus-scan-delay-ms = <1000>;
+	rockchip,deferred = <1>;
 	status = "okay";
 };
 
